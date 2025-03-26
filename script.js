@@ -1,116 +1,100 @@
 const gameBotFunction = function () {
-    // 1. Генерация случайного числа от min до max
-    function randomGenerate(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+  const randomGenerate = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  let mysteryNumber = randomGenerate(1, 100);
+
+  const isNumber = function (num) {
+    return !isNaN(parseFloat(num)) && isFinite(num);
+  };
+
+  let tries = 0;
+
+  const askTries = function () {
+    let userTries = prompt("Сколько попыток вы хотите (от 1 до 99)?");
+
+    if (userTries === null) {
+      alert("Вы отменили ввод. Игра завершена.");
+      return null;
     }
-  
-    // 2. Получаем от пользователя количество попыток
-    let tries = Number(
-      prompt("Сколько попыток хотите? Введите число от 1 до 99:")
-    );
-  
-    // Проверка на корректность ввода попыток
-    while (
-      isNaN(tries) ||
-      tries < 1 ||
-      tries > 99 ||
-      String(tries).trim() === ""
-    ) {
-      tries = Number(
-        prompt("❗ Введите корректное число попыток от 1 до 99:")
-      );
+
+    userTries = userTries.trim();
+
+    if (!isNumber(userTries)) {
+      alert("Введите именно число.");
+      return askTries();
     }
-  
-    // 3. Загаданное число
-    let mysteryNumber = randomGenerate(1, 100);
-  
-    // 4. Основная функция игры (рекурсия)
-    function getResult() {
-      const userAnswer = prompt("Угадайте число от 1 до 100:");
-  
-      // Пользователь нажал "Отмена"
-      if (userAnswer === null) {
-        alert("❌ Вы завершили игру.");
+
+    userTries = Number(userTries);
+
+    if (userTries <= 0 || userTries >= 100) {
+      alert("Число должно быть от 1 до 99.");
+      return askTries();
+    }
+
+    return userTries;
+  };
+
+  tries = askTries();
+  if (tries === null) return;
+
+  const getResult = function () {
+    const answer = prompt("Угадайте число от 1 до 100");
+
+    if (answer === null) {
+      alert("Вы завершили игру.");
+      return;
+    }
+
+    let answerNum = answer.trim();
+
+    while (!isNumber(answerNum) || answerNum === "") {
+      answerNum = prompt("Введите корректное число от 1 до 100").trim();
+      if (answerNum === null) {
+        alert("Вы завершили игру.");
         return;
       }
-  
-      const answerNum = Number(userAnswer.trim());
-  
-      // Проверка, что введено число от 1 до 100
-      if (
-        isNaN(answerNum) ||
-        answerNum < 1 ||
-        answerNum > 100 ||
-        userAnswer.trim() === ""
-      ) {
-        alert("❗ Введите корректное число от 1 до 100");
-        getResult(); // снова спрашиваем
-        return;
-      }
-  
-      // Сравнение
-      if (answerNum < mysteryNumber) {
-        alert("🔼 Загаданное число больше");
-      } else if (answerNum > mysteryNumber) {
-        alert("🔽 Загаданное число меньше");
+    }
+
+    answerNum = Number(answerNum);
+
+    if (answerNum < mysteryNumber) {
+      alert(`Загаданное число больше! Осталось попыток: ${tries - 1}`);
+    } else if (answerNum > mysteryNumber) {
+      alert(`Загаданное число меньше! Осталось попыток: ${tries - 1}`);
+    } else {
+      const again = confirm("Поздравляю! Вы угадали! Хотите сыграть ещё?");
+      if (again) {
+        tries = askTries();
+        if (tries === null) return;
+        mysteryNumber = randomGenerate(1, 100);
+        return getResult();
       } else {
-        // Угадал!
-        const again = confirm("🎉 Вы угадали! Хотите сыграть ещё?");
-        if (again) {
-          mysteryNumber = randomGenerate(1, 100);
-          tries = Number(prompt("Сколько попыток хотите? (1–99)"));
-  
-          // Проверка
-          while (
-            isNaN(tries) ||
-            tries < 1 ||
-            tries > 99 ||
-            String(tries).trim() === ""
-          ) {
-            tries = Number(prompt("❗ Введите корректное число попыток от 1 до 99:"));
-          }
-  
-          getResult();
-          return;
-        } else {
-          alert("Спасибо за игру!");
-          return;
-        }
+        alert("Спасибо за игру!");
+        return;
       }
-  
-      // Уменьшаем попытки
-      tries--;
-  
-      if (tries > 0) {
-        alert(`🕐 Осталось попыток: ${tries}`);
+    }
+
+    tries--;
+
+    if (tries > 0) {
+      getResult();
+    } else {
+      alert(`Попытки закончились. Загаданное число было: ${mysteryNumber}`);
+      const again = confirm("Вам стоит поработать над своей интуицией.\nЯ могу помочь совершенно бесплатно.\nИграем ещё раз?");
+      if (again) {
+        tries = askTries();
+        if (tries === null) return;
+        mysteryNumber = randomGenerate(1, 100);
         getResult();
       } else {
-        const tryAgain = confirm("😢 Попытки закончились. Хотите попробовать снова?");
-        if (tryAgain) {
-          tries = Number(prompt("Сколько попыток хотите? (1–99)"));
-  
-          while (
-            isNaN(tries) ||
-            tries < 1 ||
-            tries > 99 ||
-            String(tries).trim() === ""
-          ) {
-            tries = Number(prompt("❗ Введите корректное число попыток от 1 до 99:"));
-          }
-  
-          mysteryNumber = randomGenerate(1, 100);
-          getResult();
-        } else {
-          alert("👋 Вы завершили игру.");
-          return;
-        }
+        alert("Игра окончена.");
+        return;
       }
     }
-  
-    // Стартуем игру
-    getResult();
   };
-  
-  // Запускаем
-  gameBotFunction();
-  
+
+  getResult();
+};
+
+gameBotFunction();
